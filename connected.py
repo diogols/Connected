@@ -6,7 +6,7 @@ connected = nx.Graph()
 nodes = int(input("Insert number of nodes: "))
 fig = plt.gcf()  # change window title
 fig.canvas.set_window_title('Connected ' + str(nodes) + ' nodes')
-connected.add_nodes_from([0, nodes])
+connected.add_nodes_from(range(0, nodes))
 isConnected = False
 total_tries = 0
 success_tries = 0
