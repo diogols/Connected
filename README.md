@@ -1,6 +1,4 @@
 # LSDS
-Large Scale Distributed Systems
-
 Connected
 
 This small python program generates a random connected graph given the number of nodes.
