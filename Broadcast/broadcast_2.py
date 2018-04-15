@@ -2,7 +2,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from random import randint
 import numpy as np
-import sys
+import argparse
 
 
 def connected_graph(vertexes):
@@ -19,8 +19,6 @@ def connected_graph(vertexes):
 
 
 def add_edges(graph, percentage):
-    if percentage < 0:
-        percentage = 0
     edges = round(graph.number_of_edges() * percentage)
     while edges > 0:
         u = randint(0, graph.number_of_nodes() - 1)
@@ -38,10 +36,10 @@ def finished(array):
     return True
 
 
-def send(graph, u, rounds, r):
+def send(graph, u, rounds, r, probability):
     result = []
     for node in u:
-        for v in graph[node]:
+        for v in select([x for x in graph[node]], probability):
             if rounds[v] == -1:
                 rounds[v] = r
                 result.append(v)
@@ -51,22 +49,49 @@ def send(graph, u, rounds, r):
 def array_to_matrix(l):
     result = [[] for _ in range((max(l) + 1))]
     for i in range(len(l)):
-        result[l[i]].append(i)
+        if l[i] != -1:
+            result[l[i]].append(i)
     return result
 
 
 def select(vertexes, probability):
-    if probability < 0 or probability > 1:
-        probability = 1
     mask = np.random.binomial(1, probability, len(vertexes))
-    return [elem for keep, elem in zip(mask, vertexes) if keep]
+    result = [elem for keep, elem in zip(mask, vertexes) if keep]
+    if not result:
+        result.append(vertexes[0])
+    return result
 
 
-n = int(sys.argv[1])
-if n < 1:
-    exit("You must insert at least one node.")
-probability_edges = 1
-probability_nodes = 0.4
+def unsigned_int(arg):
+    v = int(arg)
+    if v < 0:
+        raise argparse.ArgumentTypeError('The value has to be higher than 1.')
+    return v
+
+
+def percentage_float(arg):
+    v = float(arg)
+    if v < 0 or v > 1:
+        raise argparse.ArgumentTypeError('Value has to be between 0 and 1.')
+    return v
+
+
+def low_percentage_float(arg):
+    v = float(arg)
+    if v < 0:
+        raise argparse.ArgumentTypeError('Value has to be higher than 0')
+    return v
+
+
+parser = argparse.ArgumentParser()
+parser.add_argument("-v",  type=unsigned_int, help="Number of nodes.", default=10)
+parser.add_argument("-n",  type=percentage_float, help="Percentage of nodes.", default=1)
+parser.add_argument("-e",  type=low_percentage_float, help="Percentage of edges.", default=1)
+args = parser.parse_args()
+
+n = args.v
+probability_edges = args.e
+probability_nodes = args.n
 g = add_edges(connected_graph(n), probability_edges)
 
 # Tick 0: choose node
@@ -78,31 +103,13 @@ tick = 0
 ticks[chosen_one] = tick
 while not finished(ticks) and not old_ticks == ticks:
     tick += 1
-    print(ticks)
     old_ticks = list(ticks)
-    nodes = select(nodes, probability_nodes)
-    nodes = send(g, nodes, ticks, tick)
+    nodes = send(g, nodes, ticks, tick, probability_nodes)
 print(ticks)
-fig = plt.gcf()
-fig.canvas.set_window_title('Broadcast with' + str(n) + ' nodes')
-fig_manager = plt.get_current_fig_manager()
-fig_manager.full_screen_toggle()
-
 l = array_to_matrix(ticks)
-plt.xticks(range(max(ticks)+1))
-if n < 30:
-    plt.yticks(range(n))
-for i in range(len(l)):
-    for j in l[i]:
-        plt.scatter([i], [j], color='blue')
-
-plt.ylabel('Node')
-plt.xlabel('Round')
-plt.title('Broadcast on connected graph')
-plt.show()
-
+print(l)
 fig = plt.gcf()
-fig.canvas.set_window_title('Broadcast with' + str(n) + ' nodes')
+fig.canvas.set_window_title('Broadcast with ' + str(n) + ' nodes')
 fig_manager = plt.get_current_fig_manager()
 fig_manager.full_screen_toggle()
 r = [len(x) for x in l]
@@ -111,5 +118,6 @@ plt.xticks(range(max(ticks)+1))
 plt.plot(range(len(l)), r, color='blue')
 plt.ylabel('Number of Nodes')
 plt.xlabel('Round')
-plt.title('Broadcast on connected graph')
+title = 'Broadcast: %d of %d nodes received the message' % (np.sum([len(x) for x in l]),  n)
+plt.title(title)
 plt.show()
