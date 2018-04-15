@@ -18,6 +18,40 @@ def connected_graph(vertexes):
     return connected
 
 
+# TODO: improve this function
+def preferential_graph(vertexes, percentage):
+    preferential = nx.Graph()
+    preferential.add_nodes_from(range(vertexes))
+    initial = np.full(vertexes, 1)
+    degrees = np.full(vertexes, 1)
+    is_connected = False
+    while not is_connected:
+        u = calculate(initial)
+        v = calculate(degrees)
+        if not preferential.has_edge(u, v) and not u == v:
+            preferential.add_edge(u, v)
+            degrees[v] += 1
+            is_connected = nx.is_connected(preferential)
+    edges = round(preferential.number_of_edges() * percentage)
+    while edges > 0:
+        u = calculate(initial)
+        v = calculate(degrees)
+        if not preferential.has_edge(u, v) and u != v:
+            preferential.add_edge(u, v)
+            degrees[v] += 1
+            edges -= 1
+    return preferential
+
+
+def calculate(degree_array):
+    total = sum(degree_array)
+    size = len(degree_array)
+    result = [None] * size
+    for i in range(0, size):
+        result[i] = degree_array[i]/total
+    return np.random.choice(np.arange(0, size), p=result)
+
+
 def add_edges(graph, percentage):
     edges = round(graph.number_of_edges() * percentage)
     while edges > 0:
@@ -36,12 +70,12 @@ def finished(array):
     return True
 
 
-def send(graph, u, rounds, r, probability):
+def send(graph, u, rounds, last, probability):
     result = []
     for node in u:
         for v in select([x for x in graph[node]], probability):
             if rounds[v] == -1:
-                rounds[v] = r
+                rounds[v] = last
                 result.append(v)
     return result
 
@@ -90,6 +124,12 @@ def positive_int(arg):
     return v
 
 
+def enumerate_char(arg):
+    if not (arg == "c" or arg == "p"):
+        raise argparse.ArgumentTypeError("Value has to be 'c' or 'p'")
+    return arg
+
+
 def sum_to_array(destiny, origin):
     length = len(destiny)
     while length < len(origin):
@@ -105,18 +145,23 @@ parser.add_argument("-v",  type=unsigned_int, help="Number of nodes.", default=1
 parser.add_argument("-n",  type=percentage_float, help="Percentage of nodes.", default=1)
 parser.add_argument("-e",  type=low_percentage_float, help="Percentage of edges.", default=1)
 parser.add_argument("-r",  type=positive_int, help="Number of runs.", default=1)
+parser.add_argument("-t", type=enumerate_char, help="Type of graph.", default="c")
 args = parser.parse_args()
 
 n = args.v
 probability_edges = args.e
 probability_nodes = args.n
-g = add_edges(connected_graph(n), probability_edges)
 runs = args.r
 
 average = []
 average_nodes = 0
 average_rounds = 0
 while runs > 0:
+    if args.t == 'c':
+        g = add_edges(connected_graph(n), probability_edges)
+    else:
+        g = preferential_graph(n, probability_edges)
+
     ticks = [-1 for x in range(n)]
     old_ticks = list(ticks)
     chosen_one = randint(0, n - 1)
@@ -131,7 +176,7 @@ while runs > 0:
     converted = [len(x) for x in array_to_matrix(ticks)]
     average = sum_to_array(average, converted)
     average_nodes += np.sum(converted)
-    average_rounds = tick
+    average_rounds += tick
 
 fig = plt.gcf()
 fig.canvas.set_window_title('Broadcast: ' + str(n) + ' nodes')

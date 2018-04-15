@@ -57,7 +57,7 @@ while not finished(ticks):
     nodes = send(g, nodes, ticks, tick)
 
 fig = plt.gcf()
-fig.canvas.set_window_title('Broadcast with' + str(n) + ' nodes')
+fig.canvas.set_window_title('Broadcast with ' + str(n) + ' nodes')
 fig_manager = plt.get_current_fig_manager()
 fig_manager.full_screen_toggle()
 
@@ -69,8 +69,8 @@ for i in range(len(l)):
     for j in l[i]:
         plt.scatter([i], [j], color='blue')
 
-plt.ylabel('Node')
-plt.xlabel('Round')
+plt.ylabel('Nodes')
+plt.xlabel('Rounds')
 plt.title('Broadcast on connected graph')
 plt.show()
 
@@ -83,6 +83,6 @@ plt.yticks(r)
 plt.xticks(range(max(ticks)+1))
 plt.plot(range(len(l)), r, color='blue')
 plt.ylabel('Number of Nodes')
-plt.xlabel('Round')
+plt.xlabel('Rounds')
 plt.title('Broadcast on connected graph')
 plt.show()
