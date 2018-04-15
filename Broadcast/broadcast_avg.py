@@ -115,6 +115,7 @@ runs = args.r
 
 average = []
 average_nodes = 0
+average_rounds = 0
 while runs > 0:
     ticks = [-1 for x in range(n)]
     old_ticks = list(ticks)
@@ -130,7 +131,7 @@ while runs > 0:
     converted = [len(x) for x in array_to_matrix(ticks)]
     average = sum_to_array(average, converted)
     average_nodes += np.sum(converted)
-    print(ticks)
+    average_rounds = tick
 
 fig = plt.gcf()
 fig.canvas.set_window_title('Broadcast: ' + str(n) + ' nodes')
@@ -140,8 +141,8 @@ r = [x / args.r for x in average]
 plt.yticks(r)
 plt.xticks(range(len(average)))
 plt.plot(range(len(average)), r, color='blue')
-plt.ylabel('Number of Nodes')
-plt.xlabel('Round')
+plt.ylabel('Average of Nodes')
+plt.xlabel('Rounds (average = %.2f)' % (average_rounds / args.r))
 title = 'Broadcast: %.2f of %d nodes received the message' % (average_nodes / args.r,  n)
 plt.title(title)
 plt.show()
