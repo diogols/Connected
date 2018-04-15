@@ -1,6 +1,7 @@
 import networkx as nx
 import matplotlib.pyplot as plt
 from random import randint
+import sys
 
 
 def connected_graph(vertexes):
@@ -40,7 +41,7 @@ def array_to_matrix(l):
     return result
 
 
-n = int(input("Insert number of nodes: "))
+n = int(sys.argv[1])
 if n < 1:
     exit("You must at least insert one node.")
 g = connected_graph(n)
