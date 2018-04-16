@@ -36,7 +36,7 @@ def preferential_graph(vertexes, percentage):
     while edges > 0:
         u = calculate(initial)
         v = calculate(degrees)
-        if not preferential.has_edge(u, v) and u != v:
+        if u != v:
             preferential.add_edge(u, v)
             degrees[v] += 1
             edges -= 1
@@ -57,7 +57,7 @@ def add_edges(graph, percentage):
     while edges > 0:
         u = randint(0, graph.number_of_nodes() - 1)
         v = randint(0, graph.number_of_nodes() - 1)
-        if not graph.has_edge(u, v) and u != v:
+        if u != v:
             graph.add_edge(u, v)
             edges -= 1
     return graph
